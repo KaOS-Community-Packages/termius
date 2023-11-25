@@ -1,5 +1,5 @@
 pkgname=termius
-pkgver=8.4.0
+pkgver=8.6.1
 pkgrel=1
 pkgdesc="Desktop SSH Client"
 url="https://www.termius.com/"
