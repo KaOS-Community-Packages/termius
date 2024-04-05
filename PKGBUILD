@@ -1,59 +1,54 @@
 pkgname=termius
-pkgver=8.6.1
+_pkgname=Termius
+__pkgname=termius-app
+pkgver=8.10.4
 pkgrel=1
-pkgdesc="Desktop SSH Client"
+pkgdesc="Termius is described as 'is more than a mere SSH client – it’s a complete command-line solution that’s redefining remote access for sysadmins and network engineers."
 url="https://www.termius.com/"
 arch=('x86_64')
 license=('custom')
-depends=('at-spi2-core' 'dbus' 'e2fsprogs' 'expat' 'gtk3' 'keyutils' 'libbsd' 'libnotify' 'libsecret' 'libxss' 'libxtst' 'nss' 'util-linux' 'xdg-utils')
-makedepends=('squashfs-tools')
-source=(
-    "${pkgname}-${pkgver}.snap::https://api.snapcraft.io/api/v1/snaps/download/WkTBXwoX81rBe3s3OTt3EiiLKBx2QhuS_169.snap"
-    "termius.desktop"
-    "tos.html")
-sha512sums=('SKIP' 'SKIP' 'SKIP')
+depends=('alsa-lib' 'at-spi2-core' 'cairo' 'dbus' 'expat' 'gcc-libs' 'glib2' 'glibc' 'gtk3'
+         'hicolor-icon-theme' 'libcups' 'libdrm' 'libsecret' 'libx11' 'libxcb' 'libxcomposite'
+         'libxdamage' 'libteam' 'libxfixes' 'libxkbcommon' 'libxrandr' 'mesa' 'nspr' 'nss' 'pango'
+         'systemd' 'wayland' 'zlib')
+makedepends=('tar')
+optdepends=('xdg-utils: Open files')
+source=("${_pkgname}-${pkgver}.deb::https://autoupdate.termius.com/linux/${_pkgname}.deb")
+sha512sums=('SKIP')
+options=('strip')
 
 prepare() {
-    mkdir -p ${pkgname}
-    unsquashfs -f -d ${pkgname} ${pkgname}-${pkgver}.snap
+    bsdtar -xf "${srcdir}/${_pkgname}-${pkgver}.deb"
+
+    rm -fdrv "./control.tar.gz" "./debian-binary"
+
+    tar -xf "${srcdir}/data.tar.xz"
+
+    rm -fdrv "${srcdir}/etc/"
+
+    gzip -d "${srcdir}/usr/share/doc/${__pkgname}/changelog.gz"
 }
-
 package() {
-    # Option 1 - copy only the needed files ~183 MiB
-    mkdir -p "${pkgdir}"/opt/${pkgname}
 
-    cd "${srcdir}"/${pkgname}
+    install -d "${pkgdir}/opt/${_pkgname}/"
+    cp -a "${srcdir}/opt/${_pkgname}/" -t "${pkgdir}/opt/"
 
-    cp -r \
-        chrome_100_percent.pak \
-        chrome_200_percent.pak \
-        chrome_crashpad_handler \
-        icudtl.dat \
-        libEGL.so \
-        libffmpeg.so \
-        libGLESv2.so \
-        libvk_swiftshader.so \
-        libvulkan.so.1 \
-        locales \
-        resources \
-        resources.pak \
-        termius-app \
-        v8_context_snapshot.bin \
-        vk_swiftshader_icd.json \
-        "${pkgdir}"/opt/${pkgname}
-    
-    cd "${srcdir}"
-    # Option 2 - copy all files from the .snap file ~503 MiB
-    #mkdir -p "${pkgdir}"/opt/
-    #cp -r "${srcdir}"/${pkgname} "${pkgdir}"/opt/${pkgname}
+    chmod 755 "${pkgdir}/opt/${_pkgname}/${__pkgname}"
+    chmod u+s "${pkgdir}/opt/${_pkgname}/chrome-sandbox" || true
 
-    find "${pkgdir}"/opt/${pkgname}/ -type f -exec chmod 644 {} \;
-    chmod 755 "${pkgdir}"/opt/${pkgname}/termius-app
-    chmod 755 "${pkgdir}"/opt/${pkgname}/chrome_crashpad_handler
+    install -d "${pkgdir}/usr/share/applications/"
+    cp -a "${srcdir}/usr/share/applications/${__pkgname}.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
 
-    mkdir -p "${pkgdir}"/usr/bin
-    ln -sf /opt/${pkgname}/termius-app "${pkgdir}"/usr/bin/${pkgname}
-    install -Dm0644 tos.html "${pkgdir}"/usr/share/licenses/${pkgname}/tos.html
-    install -Dm0644 ${pkgname}.desktop "${pkgdir}"/usr/share/applications/${pkgname}.desktop
-    install -Dm0644 ${pkgname}/meta/gui/icon.png "${pkgdir}"/usr/share/pixmaps/${pkgname}.png
+    install -d "${pkgdir}/usr/share/icons/hicolor/512x512/apps/"
+    cp -a "${srcdir}/usr/share/icons/hicolor/512x512/apps/${__pkgname}.png" -t "${pkgdir}/usr/share/icons/hicolor/512x512/apps/"
+
+    install -d "${pkgdir}/usr/share/doc/${pkgname}/"
+    cp -a "${srcdir}/usr/share/doc/${__pkgname}/changelog" -t "${pkgdir}/usr/share/doc/${pkgname}/"
+
+    install -d "${pkgdir}/usr/share/licenses/${pkgname}/"
+    cp -a "${srcdir}/opt/${_pkgname}/LICENSE.electron.txt" -t "${pkgdir}/usr/share/licenses/${pkgname}/"
+    cp -a "${srcdir}/opt/${_pkgname}/LICENSES.chromium.html" -t "${pkgdir}/usr/share/licenses/${pkgname}/"
+
+    install -d "${pkgdir}/usr/bin/"
+    ln -s "/opt/${_pkgname}/${__pkgname}" "${pkgdir}/usr/bin/${pkgname}"
 }
