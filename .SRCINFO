@@ -1,7 +1,7 @@
 pkgbase = termius
 	pkgdesc = Termius is described as 'is more than a mere SSH client – it’s a complete command-line solution that’s redefining remote access for sysadmins and network engineers.
 	pkgver = 8.10.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.termius.com/
 	arch = x86_64
 	license = custom
@@ -35,7 +35,7 @@ pkgbase = termius
 	depends = wayland
 	depends = zlib
 	optdepends = xdg-utils: Open files
-	options = strip
+	options = !strip
 	source = Termius-8.10.4.deb::https://autoupdate.termius.com/linux/Termius.deb
 	sha512sums = SKIP
 
